@@ -1073,6 +1073,14 @@ namespace EditorExtensionsRedux
                     }
                 }
 
+                if (cfg.FineAdjustEnabled && _fineAdjustWindow != null && Input.GetKeyDown(cfg.KeyMap.ToggleFineAdjust))
+                {
+                    if (_fineAdjustWindow.isEnabled())
+                        _fineAdjustWindow.enabled = false;
+                    else
+                        _fineAdjustWindow.Show();
+                    return;
+                }
 
 
                 // ALT+Z : Toggle part clipping (From cheat options)

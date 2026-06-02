@@ -91,6 +91,9 @@ namespace EditorExtensionsRedux
         [XmlElement("ToggleNoOffsetLimit")]
         public KeyCode ToggleNoOffsetLimit { get; set; }
 
+        [XmlElement("ToggleFineAdjust")]
+        public KeyCode ToggleFineAdjust { get; set; }
+
         [XmlElement("StartMasterSnap")]
         public KeyCode StartMasterSnap { get; set; }
 

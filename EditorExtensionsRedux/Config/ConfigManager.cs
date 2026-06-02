@@ -25,7 +25,7 @@ namespace EditorExtensionsRedux
 			try {
 				XmlSerializer serializer = new XmlSerializer (typeof(ConfigData));
 				using (TextWriter writer = new StreamWriter (configFilePath)) {
-					serializer.Serialize (writer, configData); 
+					serializer.Serialize (writer, configData);
 				}
 				Log.Debug ("Saved config file");
 				return true;
@@ -82,12 +82,12 @@ namespace EditorExtensionsRedux
 		/// </summary>
 		/// <returns>New config object with default settings</returns>
 		public static ConfigData CreateDefaultConfig (string configFilePath, string snapConfig, string version)
-		{            
+		{
             try {
                 ConfigData defaultConfig = new ConfigData() {
                     AngleSnapValues = LoadDefaults(KSPUtil.ApplicationRootPath + "GameData/EditorExtensionsRedux/PluginData/" + snapConfig + ".cfg"),
                     MaxSymmetry = 20,
-                    // Rapidzoom by Fwiffo 
+                    // Rapidzoom by Fwiffo
                     RapidZoom = true,
                     //ZoomCycling = true,
                     //ZoomCycleDistances = new List<float> { 0f, 1f, 5f, 30f, 100f, 500f, 10000f, 100000f, 150000f }, // RKTODO: Set good defaults
@@ -112,6 +112,7 @@ namespace EditorExtensionsRedux
                     CompoundPartAlign = KeyCode.U,
                     ToggleReRoot = KeyCode.K,
                     ToggleNoOffsetLimit = KeyCode.L,
+                    ToggleFineAdjust = KeyCode.A,
                     StartMasterSnap = KeyCode.LeftControl,
 
                     Up = KeyCode.UpArrow,
@@ -120,7 +121,7 @@ namespace EditorExtensionsRedux
 					Right = KeyCode.RightArrow,
 					Forward = KeyCode.RightShift,
 					Back = KeyCode.RightControl
-						
+
 				};
 				defaultConfig.KeyMap = defaultKeys;
 

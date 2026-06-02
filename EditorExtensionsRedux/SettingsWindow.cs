@@ -330,7 +330,19 @@ namespace EditorExtensionsRedux
                     keyMapToUpdate = "nooffsetlimit";
                 }
                 GUILayout.EndHorizontal();
-
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(Localizer.Format("#LOC_EEX_ToggleFineAdjust"), settingsLabelLayout);
+                if (keyMapToUpdate == "fineadjust" && _lastKeyPressed != KeyCode.None)
+                {
+                    _config.KeyMap.ToggleFineAdjust = _lastKeyPressed;
+                    keyMapToUpdate = string.Empty;
+                }
+                if (GUILayout.Button(_config.KeyMap.ToggleFineAdjust.ToString()))
+                {
+                    _lastKeyPressed = KeyCode.None;
+                    keyMapToUpdate = "fineadjust";
+                }
+                GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal ();
 				GUILayout.Label (Localizer.Format("#LOC_EEX_ResetCamera"), settingsLabelLayout);
 				if (keyMapToUpdate == "rc" && _lastKeyPressed != KeyCode.None) {
