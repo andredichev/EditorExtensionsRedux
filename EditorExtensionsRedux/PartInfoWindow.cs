@@ -21,7 +21,7 @@ namespace EditorExtensionsRedux
 				WindowDisabled ();
 		}
 
-		string _windowTitle = Localizer.Format("#LOC_EEX_65");
+		string _windowTitle = Localizer.Format("#LOC_EEX_PartPositionInfo");
 
 		Rect _windowRect = new Rect () {
 			xMin = Screen.width - 350,
@@ -91,7 +91,7 @@ namespace EditorExtensionsRedux
 		{
 			_toolbarInt = GUILayout.Toolbar (_toolbarInt, _toolbarStrings);
 
-			GUILayout.BeginVertical (Localizer.Format("#LOC_EEX_66"));
+			GUILayout.BeginVertical("box");
 
 //			int activeGizmos = -1;
 //			try{
@@ -109,11 +109,11 @@ namespace EditorExtensionsRedux
 			if (sp != null) {
 
 				GUILayout.BeginHorizontal ();
-				GUILayout.Label (Localizer.Format("#LOC_EEX_58"));
-				GUILayout.Label (sp ? sp.name : Localizer.Format("#LOC_EEX_59"));
+				GUILayout.Label (Localizer.Format("#LOC_EEX_CurrentPart"));
+				GUILayout.Label (sp ? sp.name : Localizer.Format("#LOC_EEX_None"));
 				GUILayout.EndHorizontal ();
 
-				GUILayout.Label (Localizer.Format("#LOC_EEX_67") + sp.GetType ().ToString ());
+				GUILayout.Label (Localizer.Format("#LOC_EEX_Type") + " " + sp.GetType().ToString());
 
 				if (_toolbarInt == 0) {
 
@@ -121,8 +121,8 @@ namespace EditorExtensionsRedux
 
 					if (sp.srfAttachNode != null) {
 						GUILayout.Label ("srfAttachNode.position: " + sp.srfAttachNode.position.ToString (vectFormat));
-						GUILayout.BeginVertical (Localizer.Format("#LOC_EEX_66"));
-						GUILayout.Label (Localizer.Format("#LOC_EEX_68"));
+						GUILayout.BeginVertical("box");
+						GUILayout.Label (Localizer.Format("#LOC_EEX_AttachedPart"));
 						if (sp.srfAttachNode.attachedPart != null) {
 							PartInfoLabels (sp.srfAttachNode.attachedPart);
 						}
@@ -148,7 +148,7 @@ namespace EditorExtensionsRedux
 
 
 			} else {
-				GUILayout.Label (Localizer.Format("#LOC_EEX_69"));
+				GUILayout.Label (Localizer.Format("#LOC_EEX_NoPartSelected"));
 			}
 
 			if (_toolbarInt == 4) {
@@ -157,7 +157,7 @@ namespace EditorExtensionsRedux
 
 			GUILayout.EndVertical ();//end main content
 
-			if (GUILayout.Button (Localizer.Format("#LOC_EEX_51"))) {
+			if (GUILayout.Button (Localizer.Format("#LOC_EEX_Close"))) {
 				this.enabled = false;
 			}
 
@@ -169,26 +169,26 @@ namespace EditorExtensionsRedux
 			List<Part> children = part.children;
 
 			if (children == null) {
-				GUILayout.Label (Localizer.Format("#LOC_EEX_70"));
+				GUILayout.Label("children null");
 				return;
 			}
 
 			for (int i = 0; i < children.Count; i++) {
-				GUILayout.Label ("child srfAttachNode #" + i.ToString ());
+				GUILayout.Label("child srfAttachNode #" + i.ToString ());
 
-				GUILayout.Label ("position " + children [i].srfAttachNode.position.ToString (vectFormat));
+				GUILayout.Label("position: " + children [i].srfAttachNode.position.ToString(vectFormat));
 
 				if (children [i].srfAttachNode.attachedPart != null)
-					GUILayout.Label ("attached part " + children [i].srfAttachNode.attachedPart.name);
+					GUILayout.Label("attachedPart: " + children [i].srfAttachNode.attachedPart.name);
 
-				GUILayout.Label ("offset " + children [i].srfAttachNode.offset.ToString (vectFormat));
-				GUILayout.Label ("orientation " + children [i].srfAttachNode.orientation.ToString (vectFormat));
-				GUILayout.Label ("nodeType " + children [i].srfAttachNode.nodeType.ToString ());
+				GUILayout.Label("offset: " + children [i].srfAttachNode.offset.ToString(vectFormat));
+				GUILayout.Label("orientation: " + children [i].srfAttachNode.orientation.ToString(vectFormat));
+				GUILayout.Label("nodeType: " + children [i].srfAttachNode.nodeType.ToString());
 				if (children [i].srfAttachNode.nodeTransform != null) {
-					GUILayout.Label ("nodeTransform.position " + children [i].srfAttachNode.nodeTransform.position.ToString (vectFormat));
-					GUILayout.Label ("nodeTransform.up " + children [i].srfAttachNode.nodeTransform.up.ToString (vectFormat));
+					GUILayout.Label("nodeTransform.position: " + children [i].srfAttachNode.nodeTransform.position.ToString(vectFormat));
+					GUILayout.Label("nodeTransform.up: " + children [i].srfAttachNode.nodeTransform.up.ToString(vectFormat));
 				} else {
-					GUILayout.Label ("nodeTransform null");
+					GUILayout.Label("nodeTransform null");
 				}
 			}
 		}
@@ -198,21 +198,20 @@ namespace EditorExtensionsRedux
 			List<AttachNode> nodes = part.attachNodes;
 
 			if (nodes == null) {
-				GUILayout.Label ("nodes null");
+				GUILayout.Label("nodes null");
 				return;
 			}
 
 			for (int i = 0; i < nodes.Count; i++) {
-				GUILayout.Label (Localizer.Format("#LOC_EEX_71") + i.ToString ());
+				GUILayout.Label("Attach Node #" + i.ToString ());
 
-				GUILayout.Label (Localizer.Format("#LOC_EEX_72") + nodes [i].position.ToString (vectFormat));
+				GUILayout.Label("position: " + nodes [i].position.ToString (vectFormat));
 
 				if (nodes [i].attachedPart != null)
-					GUILayout.Label (Localizer.Format("#LOC_EEX_73") + nodes [i].attachedPart.name);
+					GUILayout.Label("attachedPart: " + nodes [i].attachedPart.name);
 
-				GUILayout.Label (Localizer.Format("#LOC_EEX_74") + nodes [i].offset.ToString (vectFormat));
-
-				GUILayout.Label (Localizer.Format("#LOC_EEX_75") + nodes [i].orientation.ToString (vectFormat));
+				GUILayout.Label("offset: " + nodes [i].offset.ToString(vectFormat));
+				GUILayout.Label("orientation: " + nodes [i].orientation.ToString(vectFormat));
 			}
 		}
 
@@ -232,64 +231,64 @@ namespace EditorExtensionsRedux
 			//}
 
 			if (part.collider != null) {
-				GUILayout.Label (Localizer.Format("#LOC_EEX_76"));
+				GUILayout.Label("part.collider not null");
 			}
 
 //			if (part.gameObject != null && part.gameObject.collider != null) {
 //				GUILayout.Label ("part.gameObject.collider not null");
 //			}
 
-			GUILayout.Label ("isAttached " + part.isAttached.ToString ());
+			GUILayout.Label ("isAttached: " + part.isAttached.ToString ());
 			GUILayout.Label ("attRotation: " + part.attRotation.ToString (vectFormat));
 			GUILayout.Label ("attRotation0: " + part.attRotation0.ToString (vectFormat));
 			GUILayout.Label ("attPos: " + part.attPos.ToString (vectFormat));
 			GUILayout.Label ("attPos0: " + part.attPos0.ToString (vectFormat));
 
-			GUILayout.Label ("localPosition " + part.transform.localPosition.ToString (vectFormat));
-			GUILayout.Label (Localizer.Format("#LOC_EEX_72") + part.transform.position.ToString (vectFormat));
-			GUILayout.Label ("localRotation " + part.transform.localRotation.ToString (vectFormat));
-			GUILayout.Label ("rotation " + part.transform.rotation.ToString (vectFormat));
+			GUILayout.Label ("localPosition: " + part.transform.localPosition.ToString (vectFormat));
+			GUILayout.Label ("position:" + part.transform.position.ToString (vectFormat));
+			GUILayout.Label ("localRotation: " + part.transform.localRotation.ToString (vectFormat));
+			GUILayout.Label ("rotation: " + part.transform.rotation.ToString (vectFormat));
 
 
-			GUILayout.Label ("localScale " + part.transform.localScale.ToString (vectFormat));
-			GUILayout.Label ("lossyScale " + part.transform.lossyScale.ToString (vectFormat));
-			GUILayout.Label (Localizer.Format("#LOC_EEX_77") + part.transform.right.ToString (vectFormat));
-			GUILayout.Label (Localizer.Format("#LOC_EEX_78") + part.transform.up.ToString (vectFormat));
+			GUILayout.Label ("localScale: " + part.transform.localScale.ToString (vectFormat));
+			GUILayout.Label ("lossyScale: " + part.transform.lossyScale.ToString (vectFormat));
+			GUILayout.Label ("right: " + part.transform.right.ToString (vectFormat));
+			GUILayout.Label ("up: " + part.transform.up.ToString (vectFormat));
 
-			GUILayout.Label (Localizer.Format("#LOC_EEX_79") + part.GetPartRendererBound ().extents.ToString (vectFormat));
-			GUILayout.Label (Localizer.Format("#LOC_EEX_80") + part.GetPartRendererBound ().size.ToString (vectFormat));
+			GUILayout.Label ("extents: " + part.GetPartRendererBound ().extents.ToString (vectFormat));
+			GUILayout.Label ("size: " + part.GetPartRendererBound ().size.ToString (vectFormat));
 
-			try {				
+			try {
 				//GUILayout.Label ("GetPartRendererBound() extents " + part.GetPartRendererBound().extents.ToString(vectFormat));
 			} catch (Exception) {
 				//GUILayout.Label ("bounds.extents error");
 			}
 
-			GUILayout.Label (Localizer.Format("#LOC_EEX_81") + part.orgPos.ToString (vectFormat));
+			GUILayout.Label ("orgPos " + part.orgPos.ToString (vectFormat));
 		}
 
 		void CompoundPartInfo (CompoundPart part)
 		{
-			AddLabel(Localizer.Format("#LOC_EEX_82"), part.name);
-			AddLabel(Localizer.Format("#LOC_EEX_83"), part.direction.ToString(vectFormat));
-			AddLabel(Localizer.Format("#LOC_EEX_84"), part.transform.position.ToString(vectFormat));
+			AddLabel("name", part.name);
+			AddLabel("direction", part.direction.ToString(vectFormat));
+			AddLabel("position", part.transform.position.ToString(vectFormat));
 			AddLabel("localPosition", part.transform.localPosition.ToString(vectFormat));
-			AddLabel ("maxLength", part.maxLength.ToString ("F3"));
-			AddLabel ("attachState", part.attachState.ToString ());
+			AddLabel("maxLength", part.maxLength.ToString ("F3"));
+			AddLabel("attachState", part.attachState.ToString ());
 
 			if (part.target != null) {
-				AddLabel(Localizer.Format("#LOC_EEX_85"), part.target.name);
-				AddLabel(Localizer.Format("#LOC_EEX_86"), part.targetPosition.ToString(vectFormat));
+				AddLabel("target", part.target.name);
+				AddLabel("targetPosition", part.targetPosition.ToString(vectFormat));
 				AddLabel("targetRotation", part.targetRotation.ToString(vectFormat));
 			}
 		}
 
 		void CameraInfoLabels(Camera cam)
 		{
-			GUILayout.Label (Localizer.Format("#LOC_EEX_87") + cam.name);
-			GUILayout.Label (Localizer.Format("#LOC_EEX_88") + cam.transform.position.ToString(vectFormat));
-			GUILayout.Label (Localizer.Format("#LOC_EEX_89") + cam.aspect.ToString("F3"));
-			GUILayout.Label (Localizer.Format("#LOC_EEX_90") + cam.orthographic.ToString());
+			GUILayout.Label ("name: " + cam.name);
+			GUILayout.Label ("position: " + cam.transform.position.ToString(vectFormat));
+			GUILayout.Label ("aspect: " + cam.aspect.ToString("F3"));
+			GUILayout.Label ("orthographic: " + cam.orthographic.ToString());
 			GUILayout.Label ("rotation: " + cam.transform.rotation.ToString());
 			AddLabel ("projectionMatrix", cam.projectionMatrix.ToString ());
 			AddLabel ("cameraToWorldMatrix", cam.cameraToWorldMatrix.ToString ());
@@ -309,7 +308,7 @@ namespace EditorExtensionsRedux
 			AddLabel ("selPartGrabOffset", EditorLogic.fetch.selPartGrabOffset.ToString (vectFormat));
 
 			foreach (UnityEngine.Object c in comps) {
-				AddLabel (Localizer.Format("#LOC_EEX_91"), c.GetType ().ToString ());
+				AddLabel("components", c.GetType ().ToString ());
 			}
 		}
 

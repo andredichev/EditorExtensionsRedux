@@ -99,18 +99,18 @@ namespace EditorExtensionsRedux.StripSymmetry
         {
             if (obj == null)
             {
-                return Localizer.Format("#LOC_EEX_161");
+                return "null";
             }
             if (obj is IEnumerable)
             {
-                if (obj.GetType().GetMethod(Localizer.Format("#LOC_EEX_162"), new Type[] { }).IsOverride())
+                if (obj.GetType().GetMethod("ToString", new Type[] { }).IsOverride())
                 {
                     var e = obj as IEnumerable;
                     return string.Format( "[" + "{0}" +"]", string.Join(", ", e.Cast<object>().Select(a => a.PreFormat().ToString()).ToArray()));
                 }
             }
             return obj;
-        } 
+        }
 
         /// <summary>
         /// Reads destination exponentValue from the ConfigNode and magically converts it to the type you ask. Tested for float, boolean and double[]. Anything else is at your own risk.
@@ -136,7 +136,7 @@ namespace EditorExtensionsRedux.StripSymmetry
             {
                 if (ex is InvalidCastException || ex is FormatException || ex is OverflowException || ex is ArgumentNullException)
                 {
-                    LogWf( Localizer.Format("#LOC_EEX_163") + "{0}" + Localizer.Format("#LOC_EEX_164") + " {1}", cfgValue, typeof(T).Name);
+                    LogWf( "Failed to convert string value {0} to type {1}", cfgValue, typeof(T).Name);
                     return defaultValue;
                 }
                 throw;

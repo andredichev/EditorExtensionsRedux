@@ -9,8 +9,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 /*
- * 
- * 
+ *
+ *
 If you REALLY want to, here is what you will need to do to fix the Reflection issues, and I suggest you do this BEFORE any more debugging:
 
 Compile in debug mode
@@ -26,7 +26,7 @@ Compile in debug mode
     MethodInfo  Part  name
     MethodInfo KFSMEvent  methods name
     MethodInfo KFSMState  methods name
-6. Look in the log for the corresponding value for each line in the Init function, you should find the corresponding number.  
+6. Look in the log for the corresponding value for each line in the Init function, you should find the corresponding number.
 7. Update the Init section
 8. Now, recompile in Debug mode, restart the game and go into the Editor
 9. Place a part, then activate one of the gizmos on it (rotation, etc).
@@ -35,12 +35,12 @@ Compile in debug mode
     EditorLogic Gizmo Rotate Field name
 12. You need to look for the two items in the Init function which relate to the Grid, update the values as required
 Compile and test.
- * 
- * 
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
+ *
+ *
  */
 namespace EditorExtensionsRedux
 {
@@ -290,7 +290,7 @@ namespace EditorExtensionsRedux
 
         public static bool validVersion = false;
         static bool warningShown;
-        string warning = Localizer.Format("#LOC_EEX_1");
+        string warning = Localizer.Format("#LOC_EEX_WarningVersion");
 
         public static Constants c = new Constants();
 
@@ -359,7 +359,7 @@ namespace EditorExtensionsRedux
             foreach (char c in value)
             {
                 // This character is too big for ASCII
-                string encodedValue = Localizer.Format("#LOC_EEX_2") + ((int)c).ToString("x4");
+                string encodedValue = "\u" + ((int)c).ToString("x4");
                 sb.Append(encodedValue);
             }
             return sb.ToString();
@@ -369,10 +369,10 @@ namespace EditorExtensionsRedux
         // The following runs when in DEBUG mode, to dump all the reflection fields so we
         // can update the offsets
         // Also need to do the following to get the gizmo snap values:
-        // 1.  Get initial setting for EEX and have it working 
+        // 1.  Get initial setting for EEX and have it working
         // 2.  make sure the following function is active:  updateGizmoSnaps
         // 3.  Go into the editor, and activate the gizmo tools by selecting one of the gizmos
-        // 
+        //
         void localdumpReflection()
         {
             //Log.Debug("States:");
@@ -397,7 +397,7 @@ namespace EditorExtensionsRedux
                 c++;
             }
 
-            KFSMEvent ke = new KFSMEvent(Localizer.Format("#LOC_EEX_3"));
+            KFSMEvent ke = new KFSMEvent("a");
             c = 0;
             foreach (FieldInfo FI in ke.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
@@ -474,7 +474,7 @@ namespace EditorExtensionsRedux
         }
         //
         // This is to protect against another mod saving the game settings while these values are set to null.
-        // This will reset the values back to stock, save it and then set them null again 
+        // This will reset the values back to stock, save it and then set them null again
         //
         void OnGameSettingsWritten()
         {
@@ -505,14 +505,14 @@ namespace EditorExtensionsRedux
             {
                 // Following section is set to fix an old bug, where sometimes the Symmetry and AngleSnap keys get set to null
                 // This is only a partial fix, which really just resets the keys to the stock default if a None value is detected.
-                // It's caused by another mod saving the settings which now have the two values set to NULL by this mod, 
+                // It's caused by another mod saving the settings which now have the two values set to NULL by this mod,
                 // and then for whatever reason, the game exits before EEX can save the correct settings.
 
                 // The second part of the fix was adding the method OnGameSettingsWritten(), which watches for anything
                 // which saves the Settings file.  When that happens, the method will set the correct values to the keys, save it
                 // and then set them back to what the mod requires.
                 //
-                // The SafeWrite is the third part of the fix, where the SaveSettings is prefixed by removing the event call, 
+                // The SafeWrite is the third part of the fix, where the SaveSettings is prefixed by removing the event call,
                 // saving the settings and then putting the event call back.  This prevents an endless loop
                 //
 
@@ -644,14 +644,14 @@ namespace EditorExtensionsRedux
                     //editor.editorType = EditorLogic.EditorMode.VAB;
                     editor.launchSiteName = launchSiteName_LaunchPad;
 
-                    OSDMessage(Localizer.Format("#LOC_EEX_4"));
+                    OSDMessage(Localizer.Format("#LOC_EEX_VABMode"));
                 }
                 else
                 {
                     //editor.editorType = EditorLogic.EditorMode.SPH;
                     editor.launchSiteName = launchSiteName_Runway;
                     editor.symmetryMode = 1;
-                    OSDMessage(Localizer.Format("#LOC_EEX_5"));
+                    OSDMessage(Localizer.Format("#LOC_EEX_SPHMode"));
                 }
                 return;
             }
@@ -693,7 +693,7 @@ namespace EditorExtensionsRedux
                     if (cfg == null)
                     {
                         //failed to load config, create new
-                        cfg = ConfigManager.CreateDefaultConfig(_configFilePath, Localizer.Format("#LOC_EEX_6"), pluginVersion.ToString());
+                        cfg = ConfigManager.CreateDefaultConfig(_configFilePath, "DefaultSnap", pluginVersion.ToString());
                     }
                     else
                     {
@@ -725,7 +725,7 @@ namespace EditorExtensionsRedux
                         if (versionMismatch)
                         {
                             Log.Info("Config file version mismatch, replacing with new defaults");
-                            cfg = ConfigManager.CreateDefaultConfig(_configFilePath, Localizer.Format("#LOC_EEX_6"), pluginVersion.ToString());
+                            cfg = ConfigManager.CreateDefaultConfig(_configFilePath, "DefaultSnap", pluginVersion.ToString());
                         }
                         else
                         {
@@ -736,7 +736,7 @@ namespace EditorExtensionsRedux
                 }
                 else
                 {
-                    cfg = ConfigManager.CreateDefaultConfig(_configFilePath, Localizer.Format("#LOC_EEX_6"), pluginVersion.ToString());
+                    cfg = ConfigManager.CreateDefaultConfig(_configFilePath, "DefaultSnap", pluginVersion.ToString());
                     Log.Info("No existing config found, created new default config");
                 }
 
@@ -745,7 +745,7 @@ namespace EditorExtensionsRedux
 
                 if (cfg.ReRootEnabled)
                 {
-                    OSDMessage(string.Format(Localizer.Format("#LOC_EEX_7")));
+                    OSDMessage(string.Format(Localizer.Format("#LOC_EEX_RerootIsActive")));
                     EnableSelectRoot();
                 }
 
@@ -969,7 +969,7 @@ namespace EditorExtensionsRedux
                     else
                     {
                         cameraLookAt = new Vector3(0, 15, 0);
-                        OSDMessage(Localizer.Format("#LOC_EEX_9"));
+                        OSDMessage(Localizer.Format("#LOC_EEX_DefaultCamera"));
                         ResetCamera();
                         zoomSelected = false;
                     }
@@ -1034,12 +1034,12 @@ namespace EditorExtensionsRedux
                         Log.Info("ToggleReRoot, ReRootActive: " + ReRootActive.ToString());
                         if (ReRootActive)
                         {
-                            OSDMessage(string.Format(Localizer.Format("#LOC_EEX_7")));
+                            OSDMessage(string.Format(Localizer.Format("#LOC_EEX_RerootIsActive")));
                             EnableSelectRoot();
                         }
                         else
                         {
-                            OSDMessage(string.Format(Localizer.Format("#LOC_EEX_10")));
+                            OSDMessage(string.Format(Localizer.Format("#LOC_EEX_RerootIsNotActive")));
                             DisableSelectRoot();
                         }
                     }
@@ -1053,16 +1053,16 @@ namespace EditorExtensionsRedux
                         Log.Info("ToggleNoOffsetLimit, NoOffsetLimit: " + NoOffsetLimit.ToString());
                         if (NoOffsetLimit)
                         {
-                            OSDMessage(string.Format(Localizer.Format("#LOC_EEX_11")));
+                            OSDMessage(string.Format(Localizer.Format("#LOC_EEX_NoOffsetLimitIsActive")));
                             NoOffsetBehaviour.FreeOffsetBehaviour fob = gameObject.AddComponent<NoOffsetBehaviour.FreeOffsetBehaviour>();
 
                         }
                         else
                         {
-                            OSDMessage(string.Format(Localizer.Format("#LOC_EEX_12")));
+                            OSDMessage(string.Format(Localizer.Format("#LOC_EEX_NoOffsetLimitIsNotActive")));
                             Part p = EditorLogic.SelectedPart;
                             if (p != null)
-                                OSDMessage(string.Format(Localizer.Format("#LOC_EEX_13")));
+                                OSDMessage(string.Format(Localizer.Format("#LOC_EEX_NoOffsetLimitWarning")));
                             //    GameEvents.onEditorPartPlaced.Fire(p);
                             Destroy(fob);
                             NoOffsetBehaviour.FreeOffsetBehaviour.Instance = null;
@@ -1110,7 +1110,7 @@ namespace EditorExtensionsRedux
                         {
                             masterSnapPart = Utility.GetPartUnderCursor();
                             //Utility.HighlightSinglePart(XKCDColors.Blue, XKCDColors.Yellow, masterSnapPart);
-                            OSDMessage(string.Format(Localizer.Format("#LOC_EEX_14") + masterSnapPart.partInfo.title));
+                            OSDMessage(string.Format(Localizer.Format("#LOC_EEX_SnapPart") + " " + masterSnapPart.partInfo.title));
                             lastHighlightUpdate = Time.fixedTime + highlightCycleTime;
                             highlightOn = true;
                         }
@@ -1368,7 +1368,7 @@ namespace EditorExtensionsRedux
             if (masterSnapPart != null)
             {
                 Utility.UnHighlightParts(masterSnapPart);
-                OSDMessage(string.Format(Localizer.Format("#LOC_EEX_15")));
+                OSDMessage(string.Format(Localizer.Format("#LOC_EEX_SnapModeOff")));
                 masterSnapPart = null;
             }
         }
@@ -1819,10 +1819,13 @@ namespace EditorExtensionsRedux
                 EditorLogic.SelectedPart.attachRules.srfAttach ^= true;
 
                 Log.Debug("Toggling srfAttach for " + EditorLogic.SelectedPart.name);
-                OSDMessage(String.Format( Localizer.Format("#LOC_EEX_16") + " {0} " + Localizer.Format("#LOC_EEX_17") + " {1}"
-                    , EditorLogic.SelectedPart.attachRules.srfAttach ? "enabled" : "disabled"
-                    , EditorLogic.SelectedPart.name
-                ));
+                OSDMessage(
+                    Localizer.Format(
+                        "#LOC_EEX_SurfaceAttachmentFor",
+                        EditorLogic.SelectedPart.attachRules.srfAttach ? Localizer.Format("#LOC_EEX_Enabled") : Localizer.Format("#LOC_EEX_Disabled"),
+                        EditorLogic.SelectedPart.name
+                    )
+                );
             }
             return;
         }
@@ -1831,7 +1834,10 @@ namespace EditorExtensionsRedux
         {
             CheatOptions.AllowPartClipping ^= true;
             Log.Debug("AllowPartClipping " + (CheatOptions.AllowPartClipping ? "enabled" : "disabled"));
-            OSDMessage(Localizer.Format("#LOC_EEX_18") + (CheatOptions.AllowPartClipping ? Localizer.Format("#LOC_EEX_19") : Localizer.Format("#LOC_EEX_20")));
+            OSDMessage(
+                Localizer.Format("#LOC_EEX_PartClipping") + " " +
+                    (CheatOptions.AllowPartClipping ? Localizer.Format("#LOC_EEX_Enabled") : Localizer.Format("#LOC_EEX_Disabled"))
+            );
             return;
         }
 
@@ -1936,7 +1942,7 @@ namespace EditorExtensionsRedux
 					Log.Info ("EditorLogic Gizmo Offset methods name[" + cnt.ToString () + "]: " + EG.Name + "   " + EG.ReturnType.ToString());
 					cnt++;
 				}
-				
+
 			}
 #endif
             if (gizmosRotate.Length > 0)
@@ -1968,7 +1974,7 @@ namespace EditorExtensionsRedux
         void AngleSnapCycle(bool modKeyDown, bool fineKeyDown)
         {
             if (!modKeyDown)
-            {                
+            {
                 Log.Debug("Starting srfAttachAngleSnap = " + editor.srfAttachAngleSnap.ToString());
 
                 int currentAngleIndex = cfg.AngleSnapValues.IndexOf(editor.srfAttachAngleSnap);
@@ -1995,9 +2001,9 @@ namespace EditorExtensionsRedux
                 editor.srfAttachAngleSnap = newAngle;
             }
             else
-            {               
+            {
                 Log.Debug("Resetting srfAttachAngleSnap to 0");
-                editor.srfAttachAngleSnap = 0;                
+                editor.srfAttachAngleSnap = 0;
             }
 
 
@@ -2097,7 +2103,7 @@ editor.angleSnapSprite.gameObject.SetActive (false);
                 alignment = TextAnchor.MiddleCenter,
                 fontSize = 22,
                 fontStyle = FontStyle.Bold,
-                name = Localizer.Format("#LOC_EEX_21")
+                name = "OSDLabel"
             };
             osdLabelStyle.normal.textColor = Color.yellow;
 
@@ -2108,7 +2114,7 @@ editor.angleSnapSprite.gameObject.SetActive (false);
                 alignment = TextAnchor.MiddleCenter,
                 fontSize = FONTSIZE,
                 fontStyle = FontStyle.Bold,
-                name = Localizer.Format("#LOC_EEX_22")
+                name = "SymmetryLabel"
             };
             symmetryLabelStyle.normal.textColor = Color.yellow;
 
@@ -2203,16 +2209,16 @@ editor.angleSnapSprite.gameObject.SetActive (false);
             {
                 if (warningShown)
                     return;
-                GUIStyle centeredWarningStyle = new GUIStyle(GUI.skin.GetStyle(Localizer.Format("#LOC_EEX_23")));
+                GUIStyle centeredWarningStyle = new GUIStyle(GUI.skin.GetStyle("Label"));
                 string kspVersion = Versioning.version_major.ToString() + "." + Versioning.version_minor.ToString() + "." + Versioning.Revision.ToString();
-                string warning2 = warning + Localizer.Format("#LOC_EEX_24") + kspVersion;
+                string warning2 = warning + "\n" + Localizer.Format("#LOC_EEX_WarningVersionKSP") + kspVersion;
                 Vector2 sizeOfWarningLabel = centeredWarningStyle.CalcSize(new GUIContent(warning2));
 
 
                 Rect _menuRect = new Rect(Screen.width / 2f - (sizeOfWarningLabel.x / 2f), Screen.height / 2 - sizeOfWarningLabel.y,
                                      sizeOfWarningLabel.x, sizeOfWarningLabel.y * 2);
 
-                _menuRect = ClickThruBlocker.GUILayoutWindow(this.GetInstanceID(), _menuRect, ShowWarning, Localizer.Format("#LOC_EEX_25"));
+                _menuRect = ClickThruBlocker.GUILayoutWindow(this.GetInstanceID(), _menuRect, ShowWarning, Localizer.Format("#LOC_EEX_EEXMenu"));
                 return;
             }
             if (oldAllowTweakingWithoutTweakables != allowTweakingWithoutTweakables)
@@ -2227,7 +2233,7 @@ editor.angleSnapSprite.gameObject.SetActive (false);
             if (Event.current.type == EventType.Layout)
             {
                 if (_showMenu || _menuRect.Contains(Event.current.mousePosition) || (Time.fixedTime - lastTimeShown < 0.5f))
-                    _menuRect = ClickThruBlocker.GUILayoutWindow(this.GetInstanceID(), _menuRect, MenuContent, Localizer.Format("#LOC_EEX_25"));
+                    _menuRect = ClickThruBlocker.GUILayoutWindow(this.GetInstanceID(), _menuRect, MenuContent, Localizer.Format("#LOC_EEX_EEXMenu"));
                 else
                     _menuRect = new Rect();
             }
@@ -2258,7 +2264,7 @@ editor.angleSnapSprite.gameObject.SetActive (false);
             GUILayout.BeginVertical();
             if (_showAngleSnaps.isVisible())
             {
-                if (GUILayout.Button(Localizer.Format("#LOC_EEX_26")))
+                if (GUILayout.Button(Localizer.Format("#LOC_EEX_ShowAngleSnaps")))
                 {
                     _showAngleSnaps.Hide();
                 }
@@ -2266,7 +2272,7 @@ editor.angleSnapSprite.gameObject.SetActive (false);
             }
             else
             {
-                if (GUILayout.Button(Localizer.Format("#LOC_EEX_26")))
+                if (GUILayout.Button(Localizer.Format("#LOC_EEX_ShowAngleSnaps")))
                 {
                     _showAngleSnaps.Show(cfg);
                 }
@@ -2274,7 +2280,7 @@ editor.angleSnapSprite.gameObject.SetActive (false);
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
-            if (GUILayout.Button(Localizer.Format("#LOC_EEX_27")))
+            if (GUILayout.Button(Localizer.Format("#LOC_EEX_Settings")))
             {
                 _settingsWindow.Show(cfg, _configFilePath, pluginVersion);
                 this.Visible = true;
@@ -2282,7 +2288,7 @@ editor.angleSnapSprite.gameObject.SetActive (false);
 #if true
             if (cfg.FineAdjustEnabled)
             {
-                if (GUILayout.Button(Localizer.Format("#LOC_EEX_28")))
+                if (GUILayout.Button(Localizer.Format("#LOC_EEX_FineAdjust")))
                 {
                     _fineAdjustWindow.Show();
 
@@ -2291,7 +2297,7 @@ editor.angleSnapSprite.gameObject.SetActive (false);
 #endif
             if (cfg.ShowDebugInfo)
             {
-                if (GUILayout.Button(Localizer.Format("#LOC_EEX_29")))
+                if (GUILayout.Button(Localizer.Format("#LOC_EEX_PositionDebug")))
                 {
                     _partInfoWindow.Show();
                 }
@@ -2307,12 +2313,12 @@ editor.angleSnapSprite.gameObject.SetActive (false);
             {
                 GUILayout.Space(10f);
 
-                allowTweakingWithoutTweakables = GUILayout.Toggle(allowTweakingWithoutTweakables, Localizer.Format("#LOC_EEX_30"));
+                allowTweakingWithoutTweakables = GUILayout.Toggle(allowTweakingWithoutTweakables, Localizer.Format("#LOC_EEX_AllowMassTweakables"));
 
             }
 
             ///////////////
-            if (GUILayout.Button(Localizer.Format("#LOC_EEX_31")))
+            if (GUILayout.Button(Localizer.Format("#LOC_EEX_ResetModeAndSnapKeys")))
             {
                 // Editor_toggleSymMode = X
                 // Editor_toggleAngleSnap = C
@@ -2330,7 +2336,7 @@ editor.angleSnapSprite.gameObject.SetActive (false);
                 //Finally,  set the Gamesetting key to null (see other locations for info)
                 SetKeysToNoneValue();
 
-                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_EEX_32"), 3f, ScreenMessageStyle.UPPER_CENTER);
+                ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_EEX_ResetModeAndSnapKeysInfo"), 3f, ScreenMessageStyle.UPPER_CENTER);
 
             }
             ///////////////
@@ -2338,8 +2344,8 @@ editor.angleSnapSprite.gameObject.SetActive (false);
             {
                 //Boop: Rigidifier buttons.
                 GUILayout.Space(10f);
-                GUILayout.Label(Localizer.Format("#LOC_EEX_33"));
-                if (GUILayout.Button(Localizer.Format("#LOC_EEX_34")))
+                GUILayout.Label(Localizer.Format("#LOC_EEX_MassTweakables"));
+                if (GUILayout.Button(Localizer.Format("#LOC_EEX_MassTweakablesAllRigid")))
                 {
                     RefreshParts();
                     foreach (Part p in parts)
@@ -2347,10 +2353,10 @@ editor.angleSnapSprite.gameObject.SetActive (false);
                         p.rigidAttachment = true;
                         p.ApplyRigidAttachment();
                     }
-                    OSDMessage(Localizer.Format("#LOC_EEX_35"));
+                    OSDMessage(Localizer.Format("#LOC_EEX_MassTweakablesAllRigidInfo"));
                 }
 
-                if (GUILayout.Button(Localizer.Format("#LOC_EEX_36")))
+                if (GUILayout.Button(Localizer.Format("#LOC_EEX_MassTweakablesDisableRigid")))
                 {
                     RefreshParts();
                     foreach (Part p in parts)
@@ -2358,10 +2364,10 @@ editor.angleSnapSprite.gameObject.SetActive (false);
                         p.rigidAttachment = false;
                         p.ApplyRigidAttachment();
                     }
-                    OSDMessage(Localizer.Format("#LOC_EEX_37"));
+                    OSDMessage(Localizer.Format("#LOC_EEX_MassTweakablesDisableRigidInfo"));
                 }
 
-                if (GUILayout.Button(Localizer.Format("#LOC_EEX_38")))
+                if (GUILayout.Button(Localizer.Format("#LOC_EEX_MassTweakablesToggleRigid")))
                 {
                     RefreshParts();
                     foreach (Part p in parts)
@@ -2369,12 +2375,12 @@ editor.angleSnapSprite.gameObject.SetActive (false);
                         p.rigidAttachment = !p.rigidAttachment;
                         p.ApplyRigidAttachment();
                     }
-                    OSDMessage(Localizer.Format("#LOC_EEX_39"));
+                    OSDMessage(Localizer.Format("#LOC_EEX_MassTweakablesToggleRigidInfo"));
                 }
 
                 //Boop: Autostrutter buttons.
 
-                if (GUILayout.Button(Localizer.Format("#LOC_EEX_40")))
+                if (GUILayout.Button(Localizer.Format("#LOC_EEX_NoAutostruts")))
                 {
                     RefreshParts();
                     foreach (Part p in parts)
@@ -2390,10 +2396,10 @@ editor.angleSnapSprite.gameObject.SetActive (false);
                                 Debug.LogException(e);
                             }
                     }
-                    OSDMessage(Localizer.Format("#LOC_EEX_41"));
+                    OSDMessage(Localizer.Format("#LOC_EEX_NoAutostrutsInfo"));
                 }
 
-                if (GUILayout.Button(Localizer.Format("#LOC_EEX_42")))
+                if (GUILayout.Button(Localizer.Format("#LOC_EEX_AsGrandparent")))
                 {
                     RefreshParts();
                     foreach (Part p in parts)
@@ -2407,10 +2413,10 @@ editor.angleSnapSprite.gameObject.SetActive (false);
 
                         }
                     }
-                    OSDMessage(Localizer.Format("#LOC_EEX_43"));
+                    OSDMessage(Localizer.Format("#LOC_EEX_AsGrandparentInfo"));
                 }
 
-                if (GUILayout.Button(Localizer.Format("#LOC_EEX_44")))
+                if (GUILayout.Button(Localizer.Format("#LOC_EEX_AsHeaviest")))
                 {
                     RefreshParts();
                     foreach (Part p in parts)
@@ -2426,10 +2432,10 @@ editor.angleSnapSprite.gameObject.SetActive (false);
 
                         }
                     }
-                    OSDMessage(Localizer.Format("#LOC_EEX_45"));
+                    OSDMessage(Localizer.Format("#LOC_EEX_AsHeaviestInfo"));
                 }
 
-                if (GUILayout.Button(Localizer.Format("#LOC_EEX_46")))
+                if (GUILayout.Button(Localizer.Format("#LOC_EEX_AsRoot")))
                 {
                     RefreshParts();
                     foreach (Part p in parts)
@@ -2445,19 +2451,19 @@ editor.angleSnapSprite.gameObject.SetActive (false);
                             p.ToggleAutoStrut();
                         }
                     }
-                    OSDMessage(Localizer.Format("#LOC_EEX_47"));
+                    OSDMessage(Localizer.Format("#LOC_EEX_AsRootInfo"));
                 }
                 GUILayout.Space(10);
                 if (showAutostruts)
                 {
-                    if (GUILayout.Button(Localizer.Format("#LOC_EEX_48")))
+                    if (GUILayout.Button(Localizer.Format("#LOC_EEX_HideAutostruts")))
                     {
                         showAutostruts = false;
                     }
                 }
                 else
                 {
-                    if (GUILayout.Button(Localizer.Format("#LOC_EEX_49")))
+                    if (GUILayout.Button(Localizer.Format("#LOC_EEX_ShowAutostruts")))
                     {
                         showAutostruts = true;
                     }
@@ -2478,7 +2484,7 @@ editor.angleSnapSprite.gameObject.SetActive (false);
             GUILayout.BeginVertical();
             {
                 float offsetY = Mathf.FloorToInt(0.8f * Screen.height);
-                GUIStyle centeredWarningStyle = new GUIStyle(GUI.skin.GetStyle(Localizer.Format("#LOC_EEX_23")))
+                GUIStyle centeredWarningStyle = new GUIStyle(GUI.skin.GetStyle("Label"))
                 {
                     alignment = TextAnchor.UpperCenter,
                     fontSize = 16,
@@ -2490,7 +2496,7 @@ editor.angleSnapSprite.gameObject.SetActive (false);
                 GUILayout.Label(warning, centeredWarningStyle);
 
                 offsetY += sizeOfWarningLabel.y;
-                if (GUILayout.Button(Localizer.Format("#LOC_EEX_50")))
+                if (GUILayout.Button(Localizer.Format("#LOC_EEX_ForumThread")))
                     #region NO_LOCALIZATION
                     Application.OpenURL("http://forum.kerbalspaceprogram.com/index.php?/topic/127378-editor-extensions-redux-324-released-for-111-with-selectroot-merge-stripsymmetry-nooffsetlimits/");
                 #endregion
@@ -2499,7 +2505,7 @@ editor.angleSnapSprite.gameObject.SetActive (false);
 
 
             }
-            if (GUILayout.Button(Localizer.Format("#LOC_EEX_51")))
+            if (GUILayout.Button(Localizer.Format("#LOC_EEX_Close")))
             {
                 warningShown = true;
             }
@@ -2675,11 +2681,13 @@ editor.angleSnapSprite.gameObject.SetActive (false);
                 //Radial mode 'number+R', mirror mode is 'M'/'MM'
                 if (editor.symmetryMethod == SymmetryMethod.Radial)
                 {
-                    symmetryLabelValue = (editor.symmetryMode + 1) + "R";
+                    symmetryLabelValue = (editor.symmetryMode + 1) + Localizer.Format("#LOC_EEX_SymmetryMethodRadialLetter");
                 }
                 else if (editor.symmetryMethod == SymmetryMethod.Mirror)
                 {
-                    symmetryLabelValue = (editor.symmetryMode == 0) ? Localizer.Format("#LOC_EEX_52") : Localizer.Format("#LOC_EEX_53");
+                    symmetryLabelValue = Localizer.Format("#LOC_EEX_SymmetryMethodMirrorLetter");
+                    if (editor.symmetryMode > 0)
+                        symmetryLabelValue += Localizer.Format("#LOC_EEX_SymmetryMethodMirrorLetter");
                 }
                 //				Log.Info ("ShowSnapLabels disabling sprites, GameSettings.VAB_USE_ANGLE_SNAP: " + GameSettings.VAB_USE_ANGLE_SNAP.ToString());
 

@@ -12,36 +12,36 @@ namespace EditorExtensionsRedux
     {
         public override string Title { get { return ""; } }
         public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }
-        public override string Section { get { return Localizer.Format("#LOC_EEX_147"); } }
-        public override string DisplaySection { get { return Localizer.Format("#LOC_EEX_147"); } }
+        public override string Section { get { return Localizer.Format("#LOC_EEX_EditorExtensions"); } }
+        public override string DisplaySection { get { return Localizer.Format("#LOC_EEX_EditorExtensions"); } }
         public override int SectionOrder { get { return 1; } }
         public override bool HasPresets { get { return false; } }
 
 
 
-        [GameParameters.CustomFloatParameterUI("Height of bottom of vessel in VAB", minValue = 0, maxValue = 20f, stepCount = 101, displayFormat = "F4",
-            toolTip = "#LOC_EEX_148")]
+        [GameParameters.CustomFloatParameterUI("LOC_EEX_VABInfo", minValue = 0, maxValue = 20f, stepCount = 101, displayFormat = "F4",
+            toolTip = "#LOC_EEX_VABTip")]
         public float vabHeight = 5f;
 
-        [GameParameters.CustomFloatParameterUI("Height of bottom of vessel in SPH", minValue = 0, maxValue = 20, stepCount = 101, displayFormat = "F4",
-            toolTip = "#LOC_EEX_149")]
+        [GameParameters.CustomFloatParameterUI("LOC_EEX_SPHInfo", minValue = 0, maxValue = 20, stepCount = 101, displayFormat = "F4",
+            toolTip = "#LOC_EEX_SPHTip")]
         public float sphHeight = 5f;
 
-  
+
         public override void SetDifficultyPreset(GameParameters.Preset preset)
         {
         }
 
         public override bool Enabled(MemberInfo member, GameParameters parameters)
         {
-   
+
             return true;
         }
 
         //bool unread = false;
         public override bool Interactible(MemberInfo member, GameParameters parameters)
         {
-            
+
             return true;
         }
 

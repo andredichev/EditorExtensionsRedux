@@ -40,7 +40,7 @@ namespace EditorExtensionsRedux.StripSymmetry
                 return;
             if (editor.editorScreen != EditorScreen.Parts)
                 return;
-			
+
 			if (!Input.GetKey (KeyCode.Mouse0) || !Input.GetKey(KeyCode.LeftShift) || !Input.GetKey(KeyCode.LeftAlt) ) {
 				stripIsActive = false;
 				return;
@@ -53,16 +53,16 @@ namespace EditorExtensionsRedux.StripSymmetry
             if (p == null)
                 return;
 
-            print(String.Format( "(" + "{0}" + Localizer.Format("#LOC_EEX_157") + " {1}", p.partInfo.title, p.symMethod));
-            print(String.Format( "(" + "{0}" + Localizer.Format("#LOC_EEX_158") + " {1}", p.partInfo.title, p.symmetryCounterparts.Count));
+            print(String.Format( "(" + "{0}).symMethod = {1}", p.partInfo.title, p.symMethod));
+            print(String.Format( "(" + "{0}).symmetryCounterparts.Count = {1}", p.partInfo.title, p.symmetryCounterparts.Count));
             if (p.symmetryCounterparts.Count == 0 && !stripIsActive)
             {
-                _osd.Error(Localizer.Format("#LOC_EEX_159") + p.partInfo.title);
+                _osd.Error(Localizer.Format("#LOC_EEX_PartHasNoSymmetry") + p.partInfo.title);
 				stripIsActive = true;
                 return;
             }
 			if (!stripIsActive) {
-				_osd.Info (Localizer.Format("#LOC_EEX_160"));
+				_osd.Info (Localizer.Format("#LOC_EEX_RemovingSymmetry"));
 				stripIsActive = true;
 				RemoveSymmetry (p);
 			}

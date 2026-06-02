@@ -69,7 +69,7 @@ namespace EditorExtensionsRedux
             if (Event.current.type == EventType.Layout)
             {
                 //_windowRect.yMax = _windowRect.yMin;
-                _windowRect = ClickThruBlocker.GUILayoutWindow(this.GetInstanceID(), _windowRect, WindowContent, Localizer.Format("#LOC_EEX_146"));
+                _windowRect = ClickThruBlocker.GUILayoutWindow(this.GetInstanceID(), _windowRect, WindowContent, Localizer.Format("#LOC_EEX_AngleSnaps"));
             }
         }
 
@@ -103,7 +103,7 @@ namespace EditorExtensionsRedux
 
         void WindowContent(int windowID)
         {
-            GUILayout.BeginVertical(Localizer.Format("#LOC_EEX_66"));
+            GUILayout.BeginVertical("box");
 
             #region angle snap values settings
 
@@ -127,7 +127,7 @@ namespace EditorExtensionsRedux
 #if DEBUG
             catch (Exception ex)
             {
-                //potential for some intermittent locking/threading issues here	
+                //potential for some intermittent locking/threading issues here
                 //Debug only to avoid log spam
                 Log.Error("Error updating AngleSnapValues: " + ex.Message);
             }
@@ -143,19 +143,19 @@ namespace EditorExtensionsRedux
             GUILayout.EndVertical();//end main content
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button(Localizer.Format("#LOC_EEX_51")))
+            if (GUILayout.Button(Localizer.Format("#LOC_EEX_Close")))
             {
                 //reload config to reset any unsaved changes?
                 //_config = ConfigManager.LoadConfig (_configFilePath);
                 CloseWindow();
             }
 #if false
-            if (GUILayout.Button(Localizer.Format("#LOC_EEX_142")))
+            if (GUILayout.Button(Localizer.Format("#LOC_EEX_Defaults")))
             {
                 _config = ConfigManager.CreateDefaultConfig(_configFilePath, _version);
             }
 
-            if (GUILayout.Button(Localizer.Format("#LOC_EEX_145")))
+            if (GUILayout.Button(Localizer.Format("#LOC_EEX_Save")))
             {
                 ConfigManager.SaveConfig(_config, _configFilePath);
                 CloseWindow();

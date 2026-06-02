@@ -59,12 +59,12 @@ namespace EditorExtensionsRedux
         {
             if (isEnabled())
             {
-                _windowTitle = string.Format(Localizer.Format("#LOC_EEX_54"));
+                _windowTitle = string.Format(Localizer.Format("#LOC_EEX_FineAdjustments"));
                 var tstyle = new GUIStyle(GUI.skin.window);
 
                 if (fineAdjustActive)
                 {
-                    _windowTitle = _windowTitle + Localizer.Format("#LOC_EEX_55");
+                    _windowTitle += " " + Localizer.Format("#LOC_EEX_Active");
                     tstyle.normal.textColor = Color.yellow;
                 }
                 //_windowRect.yMax = _windowRect.yMin;
@@ -84,7 +84,7 @@ namespace EditorExtensionsRedux
 
 
         AdjustmentType adjType = AdjustmentType.translation;
-        string adjTypeStr = Localizer.Format("#LOC_EEX_56");
+        string adjTypeStr = Localizer.Format("#LOC_EEX_Translation");
         public float offset = 0.01f;
         public float rotationZZ = 1.0f;
         public int offsetDeltaIndex = 2;
@@ -133,16 +133,16 @@ namespace EditorExtensionsRedux
             if (GizmoEvents.offsetGizmoActive)
             {
                 adjType = AdjustmentType.translation;
-                adjTypeStr = Localizer.Format("#LOC_EEX_56");
+                adjTypeStr = Localizer.Format("#LOC_EEX_Translation");
             }
             if (GizmoEvents.rotateGizmoActive)
             {
                 adjType = AdjustmentType.rotation;
-                adjTypeStr = "Rotation";
+                adjTypeStr = Localizer.Format("#LOC_EEX_Rotation");
             }
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_EEX_57"), lstyle);
+            GUILayout.Label(Localizer.Format("#LOC_EEX_AdjustmentType"), lstyle);
             GUILayout.Label(adjTypeStr, lstyle);
             GUILayout.EndHorizontal();
 
@@ -152,19 +152,24 @@ namespace EditorExtensionsRedux
             //			return;
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_EEX_58"), lstyle);
-            GUILayout.Label(puc ? puc.name : Localizer.Format("#LOC_EEX_59"), lstyle);
+            GUILayout.Label(Localizer.Format("#LOC_EEX_CurrentPart"), lstyle);
+            GUILayout.Label(puc ? puc.name : Localizer.Format("#LOC_EEX_None"), lstyle);
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_EEX_60"), lstyle);
+            GUILayout.Label(Localizer.Format("#LOC_EEX_SymmetryMethod"), lstyle);
             if (puc != null)
-                GUILayout.Label(puc.symMethod.ToString());
+            {
+                if (puc.symMethod == SymmetryMethod.Radial)
+                    GUILayout.Label(Localizer.Format("#LOC_EEX_SymmetryMethodRadial"));
+                else if (puc.symMethod == SymmetryMethod.Mirror)
+                    GUILayout.Label(Localizer.Format("#LOC_EEX_SymmetryMethodMirror"));
+            }
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             if (adjType != AdjustmentType.translation || puc != EditorLogic.RootPart)
             {
-                GUILayout.Label(Localizer.Format("#LOC_EEX_61"), lstyle, GUILayout.MinWidth(150));
+                GUILayout.Label(Localizer.Format("#LOC_EEX_Delta"), lstyle, GUILayout.MinWidth(150));
                 if (GUILayout.Button("<", GUILayout.Width(20)))
                 {
                     switch (adjType)
@@ -188,7 +193,7 @@ namespace EditorExtensionsRedux
                         GUILayout.Label(getDelta(rotationdeltaIndex).ToString(), "TextField");
                         break;
                     case AdjustmentType.translation:
-                        GUILayout.Label(getDelta(offsetDeltaIndex).ToString(), Localizer.Format("#LOC_EEX_62"));
+                        GUILayout.Label(getDelta(offsetDeltaIndex).ToString(), "TextField");
                         break;
                 }
 
@@ -217,7 +222,7 @@ namespace EditorExtensionsRedux
             GUILayout.BeginHorizontal();
             if (adjType != AdjustmentType.translation || puc != EditorLogic.RootPart)
             {
-                GUILayout.Label(adjTypeStr + Localizer.Format("#LOC_EEX_63"), lstyle, GUILayout.MinWidth(150));
+                GUILayout.Label(Localizer.Format("#LOC_EEX_Amount"), lstyle, GUILayout.MinWidth(150));
                 if (GUILayout.Button("-", GUILayout.Width(20)))
                 {
                     switch (adjType)
@@ -242,7 +247,7 @@ namespace EditorExtensionsRedux
                         GUILayout.Label(rotationZZ.ToString(), "TextField");
                         break;
                     case AdjustmentType.translation:
-                        GUILayout.Label(offset.ToString(), Localizer.Format("#LOC_EEX_62"));
+                        GUILayout.Label(offset.ToString(), "TextField");
                         break;
                 }
 
@@ -263,7 +268,7 @@ namespace EditorExtensionsRedux
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button(Localizer.Format("#LOC_EEX_64")))
+            if (GUILayout.Button(Localizer.Format("#LOC_EEX_Done")))
             {
                 Log.Info("Done");
                 fineAdjustActive = false;
@@ -293,7 +298,7 @@ namespace EditorExtensionsRedux
                         //						if (GizmoEvents.offsetGizmoActive) {
                         //							toolbarInt = 0;
                         //						}
-                        //						if (HighLogic.FindObjectsOfType<EditorGizmos.GizmoRotate> ().Length > 0) { 
+                        //						if (HighLogic.FindObjectsOfType<EditorGizmos.GizmoRotate> ().Length > 0) {
                         //						if (GizmoEvents.rotateGizmoActive) {
                         //							toolbarInt = 1;
                         //						}

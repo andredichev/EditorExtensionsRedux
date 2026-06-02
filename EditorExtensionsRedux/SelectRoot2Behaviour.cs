@@ -18,18 +18,18 @@ namespace EditorExtensionsRedux {
 		private CleanupFn OnCleanup;
 
         /**
-		 * The stock root selection has two states: 
+		 * The stock root selection has two states:
 		 *  - st_root_unselected: Active after switching to root mode. Waits for mouse up, picks part and sets SelectedPart.
 		 *  - st_root_select: The state after the first click.
-		 *  
-		 * Skip straight to st_root state by adding an event to st_root_unselected with 
+		 *
+		 * Skip straight to st_root state by adding an event to st_root_unselected with
 		 * always true condition that sets up SelectedPart and transitions to st_root.
-		 * 
+		 *
 		 * Needs to run after EditorLogic#Start() so the states are initialized.
 		 */
 
         public void EnableSelectRoot()
-        { 
+        {
             // Oh god, so much dirty reflection. Please don't sue me, Squad :(
             //KerbalFSM editorFSM = (KerbalFSM)Refl.GetValue(EditorLogic.fetch, "\u0001");
 			// Skip first click in root selection mode:
@@ -58,11 +58,11 @@ namespace EditorExtensionsRedux {
 			KFSMStateChange fixAlreadyHoveringPartFn = (from) => {
                 Part partUnderCursor = Utility.GetPartUnderCursor();
 				var selectors = EditorLogic.SortedShipList;
-			
+
 				//EditorLogic.fetch.Lock (true, true, true, "SelectRoot2");
 
 				var selectorUnderCursor = selectors.Find(x => (Part)x == partUnderCursor);
-				if(selectorUnderCursor) 
+				if(selectorUnderCursor)
 				{
 //						Refl.Invoke(selectorUnderCursor, "OnMouseIsOver");
 					Refl.Invoke(selectorUnderCursor, EditorExtensions.c.ONMOUSEISOVER);
@@ -78,7 +78,7 @@ namespace EditorExtensionsRedux {
 
                 //var template = (ScreenMessage)Refl.GetValue(EditorLogic.fetch, "modeMsg");
                 var template = (ScreenMessage)Refl.GetValue(EditorLogic.fetch, EditorExtensions.c.MODEMSG);
-				ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_EEX_92"), template);
+				ScreenMessages.PostScreenMessage(Localizer.Format("#LOC_EEX_SelectRootPart"), template);
 			};
 
 			st_root_select.OnEnter += postNewMessageFn;
@@ -111,7 +111,7 @@ namespace EditorExtensionsRedux {
 
 				EditorLogic.SelectedPart.gameObject.SetLayerRecursive(0, 1 << 21);
 #if false
-				
+
 				Part[] parts = EditorLogic.RootPart.GetComponentsInChildren<Part>();
 				foreach (var p in parts)
 				{
@@ -131,7 +131,7 @@ namespace EditorExtensionsRedux {
 			//KFSMState st_place = (KFSMState)Refl.GetValue(EditorLogic.fetch, "st_place");
 			KFSMState st_place = (KFSMState)Refl.GetValue(EditorLogic.fetch, EditorExtensions.c.ST_PLACE);
 			SelectRootInjectEvent(st_place, dropNewRootPartEvent);
-				
+
 
 			Log.Info("Setup complete..");
 		}
@@ -159,7 +159,7 @@ namespace EditorExtensionsRedux {
 				{
 					if (kfsmstate == state)
 					{
-						
+
 						kfsmstatelist.Remove(kfsmstate);
 						Log.Info("Removed event " + injectedEvent.name + " from state " +  state.name);
 						return;

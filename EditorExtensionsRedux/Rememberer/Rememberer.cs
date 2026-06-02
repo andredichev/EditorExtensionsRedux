@@ -43,7 +43,7 @@ namespace Rememberer
                 return;
             if (nodeFile == null)
             {
-                if (hasMod(Localizer.Format("#LOC_EEX_156")))
+                if (hasMod("PRUNE"))
                 {
                     EditorExtensionsRedux.Log.Info("Rememberer.Start, PRUNE found");
 

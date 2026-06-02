@@ -10,15 +10,15 @@ namespace EditorExtensionsRedux
 		internal override void Awake ()
 		{
 			base.Awake ();
-			_windowTitle = Localizer.Format("#LOC_EEX_150");
+			_windowTitle = Localizer.Format("#LOC_EEX_Strutomatic");
 		}
 
 		bool _toggle = false;
 		internal override void WindowContent (int windowID)
 		{
-			_toggle = GUILayout.Toggle (_toggle, _toggle ? Localizer.Format("#LOC_EEX_151") : Localizer.Format("#LOC_EEX_152"), Localizer.Format("#LOC_EEX_153"));
+			_toggle = GUILayout.Toggle (_toggle, _toggle ? Localizer.Format("#LOC_EEX_On") : Localizer.Format("#LOC_EEX_Off"), "Button");
 
-			if (GUILayout.Button (Localizer.Format("#LOC_EEX_51"))) {
+			if (GUILayout.Button (Localizer.Format("#LOC_EEX_Close"))) {
 				CloseWindow ();
 			}
 
