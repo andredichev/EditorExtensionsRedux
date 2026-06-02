@@ -1162,6 +1162,7 @@ namespace EditorExtensionsRedux
                 {
 
                     Vector3 axis;
+
                     //					var gizmosOffset = HighLogic.FindObjectsOfType<EditorGizmos.GizmoOffset> ();
                     //					if (gizmosOffset.Length > 0) {
                     if (GizmoEvents.offsetGizmoActive)
@@ -1201,14 +1202,14 @@ namespace EditorExtensionsRedux
 
 					 */
 
-                            if (Input.GetKey(cfg.KeyMap.Down))
+                            if (Input.GetKeyDown(cfg.KeyMap.Down))
                             {
                                 axis = Vector3.down;
                                 Refl.Invoke(GizmoEvents.gizmosOffset[0], EditorExtensions.c.GIZMOOFFSET_ONHANDLEMOVESTART, GizmoEvents.gizmoOffsetHandle, axis);
                                 Refl.Invoke(GizmoEvents.gizmosOffset[0], EditorExtensions.c.GIZMOOFFSET_ONHANDLEMOVE, GizmoEvents.gizmoOffsetHandle, axis, offset);
                                 Refl.Invoke(GizmoEvents.gizmosOffset[0], EditorExtensions.c.GIZMOOFFSET_ONHANDLEMOVEEND, GizmoEvents.gizmoOffsetHandle, axis, 0.0f);
                             }
-                            if (Input.GetKey(cfg.KeyMap.Up))
+                            if (Input.GetKeyDown(cfg.KeyMap.Up))
                             {
                                 axis = Vector3.up;
                                 Refl.Invoke(GizmoEvents.gizmosOffset[0], EditorExtensions.c.GIZMOOFFSET_ONHANDLEMOVESTART, GizmoEvents.gizmoOffsetHandle, axis);
@@ -1216,7 +1217,7 @@ namespace EditorExtensionsRedux
                                 Refl.Invoke(GizmoEvents.gizmosOffset[0], EditorExtensions.c.GIZMOOFFSET_ONHANDLEMOVEEND, GizmoEvents.gizmoOffsetHandle, axis, 0.0f);
                             }
 
-                            if (Input.GetKey(cfg.KeyMap.Left))
+                            if (Input.GetKeyDown(cfg.KeyMap.Left))
                             {
                                 if (EditorDriver.editorFacility == EditorFacility.VAB)
                                     axis = Vector3.forward;
@@ -1226,7 +1227,7 @@ namespace EditorExtensionsRedux
                                 Refl.Invoke(GizmoEvents.gizmosOffset[0], EditorExtensions.c.GIZMOOFFSET_ONHANDLEMOVE, GizmoEvents.gizmoOffsetHandle, axis, offset);
                                 Refl.Invoke(GizmoEvents.gizmosOffset[0], EditorExtensions.c.GIZMOOFFSET_ONHANDLEMOVEEND, GizmoEvents.gizmoOffsetHandle, axis, 0.0f);
                             }
-                            if (Input.GetKey(cfg.KeyMap.Right))
+                            if (Input.GetKeyDown(cfg.KeyMap.Right))
                             {
                                 if (EditorDriver.editorFacility == EditorFacility.VAB)
                                     axis = Vector3.back;
@@ -1238,7 +1239,7 @@ namespace EditorExtensionsRedux
 
                             }
 
-                            if (Input.GetKey(cfg.KeyMap.Forward))
+                            if (Input.GetKeyDown(cfg.KeyMap.Forward))
                             {
                                 if (EditorDriver.editorFacility == EditorFacility.VAB)
                                     axis = Vector3.right;
@@ -1249,7 +1250,7 @@ namespace EditorExtensionsRedux
                                 Refl.Invoke(GizmoEvents.gizmosOffset[0], EditorExtensions.c.GIZMOOFFSET_ONHANDLEMOVEEND, GizmoEvents.gizmoOffsetHandle, axis, 0.0f);
 
                             }
-                            if (Input.GetKey(cfg.KeyMap.Back))
+                            if (Input.GetKeyDown(cfg.KeyMap.Back))
                             {
                                 if (EditorDriver.editorFacility == EditorFacility.VAB)
                                     axis = Vector3.left;
@@ -1287,7 +1288,7 @@ namespace EditorExtensionsRedux
                                 //									gizmoRotateHandle = HighLogic.FindObjectOfType<EditorGizmos.GizmoRotateHandle> ();
                                 float rotation = FineAdjustWindow.Instance.rotationZZ;
 
-                                if (Input.GetKey(cfg.KeyMap.Down))
+                                if (Input.GetKeyDown(cfg.KeyMap.Down))
                                 {
                                     if (EditorDriver.editorFacility == EditorFacility.VAB)
                                         axis = Vector3.forward;
@@ -1298,7 +1299,7 @@ namespace EditorExtensionsRedux
                                     Refl.Invoke(GizmoEvents.gizmosRotate[0], EditorExtensions.c.GIZMOROTATE_ONHANDLEROTATE, GizmoEvents.gizmoRotateHandle, axis, rotation);
                                     Refl.Invoke(GizmoEvents.gizmosRotate[0], EditorExtensions.c.GIZMOROTATE_ONHANDLEROTATEEND, GizmoEvents.gizmoRotateHandle, axis, 0.0f);
                                 }
-                                if (Input.GetKey(cfg.KeyMap.Up))
+                                if (Input.GetKeyDown(cfg.KeyMap.Up))
                                 {
                                     if (EditorDriver.editorFacility == EditorFacility.VAB)
                                         axis = Vector3.back;
@@ -1308,7 +1309,7 @@ namespace EditorExtensionsRedux
                                     Refl.Invoke(GizmoEvents.gizmosRotate[0], EditorExtensions.c.GIZMOROTATE_ONHANDLEROTATE, GizmoEvents.gizmoRotateHandle, axis, rotation);
                                     Refl.Invoke(GizmoEvents.gizmosRotate[0], EditorExtensions.c.GIZMOROTATE_ONHANDLEROTATEEND, GizmoEvents.gizmoRotateHandle, axis, 0.0f);
                                 }
-                                if (Input.GetKey(cfg.KeyMap.Left))
+                                if (Input.GetKeyDown(cfg.KeyMap.Left))
                                 {
                                     if (EditorDriver.editorFacility == EditorFacility.VAB)
                                         axis = Vector3.right;
@@ -1318,7 +1319,7 @@ namespace EditorExtensionsRedux
                                     Refl.Invoke(GizmoEvents.gizmosRotate[0], EditorExtensions.c.GIZMOROTATE_ONHANDLEROTATE, GizmoEvents.gizmoRotateHandle, axis, rotation);
                                     Refl.Invoke(GizmoEvents.gizmosRotate[0], EditorExtensions.c.GIZMOROTATE_ONHANDLEROTATEEND, GizmoEvents.gizmoRotateHandle, axis, 0.0f);
                                 }
-                                if (Input.GetKey(cfg.KeyMap.Right))
+                                if (Input.GetKeyDown(cfg.KeyMap.Right))
                                 {
                                     if (EditorDriver.editorFacility == EditorFacility.VAB)
                                         axis = Vector3.left;
@@ -1329,7 +1330,7 @@ namespace EditorExtensionsRedux
                                     Refl.Invoke(GizmoEvents.gizmosRotate[0], EditorExtensions.c.GIZMOROTATE_ONHANDLEROTATEEND, GizmoEvents.gizmoRotateHandle, axis, 0.0f);
 
                                 }
-                                if (Input.GetKey(cfg.KeyMap.Forward))
+                                if (Input.GetKeyDown(cfg.KeyMap.Forward))
                                 {
 
                                     axis = Vector3.up;
@@ -1338,7 +1339,7 @@ namespace EditorExtensionsRedux
                                     Refl.Invoke(GizmoEvents.gizmosRotate[0], EditorExtensions.c.GIZMOROTATE_ONHANDLEROTATEEND, GizmoEvents.gizmoRotateHandle, axis, 0.0f);
 
                                 }
-                                if (Input.GetKey(cfg.KeyMap.Back))
+                                if (Input.GetKeyDown(cfg.KeyMap.Back))
                                 {
                                     axis = Vector3.down;
                                     Refl.Invoke(GizmoEvents.gizmosRotate[0], EditorExtensions.c.GIZMOROTATE_ONHANDLEROTATESTART, GizmoEvents.gizmoRotateHandle, axis);

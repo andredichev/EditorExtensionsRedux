@@ -197,7 +197,6 @@ namespace EditorExtensionsRedux
                 _config.FineAdjustEnabled = GUILayout.Toggle(_config.FineAdjustEnabled, new GUIContent(Localizer.Format("#LOC_EEX_FineAdjustEnabled")));
                 GUILayout.EndHorizontal();
 
-
                 GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
                 _config.AnglesnapModIsToggle = GUILayout.Toggle(_config.AnglesnapModIsToggle, new GUIContent(Localizer.Format("#LOC_EEX_AngleSnapToggles")));
                 GUILayout.EndHorizontal();
