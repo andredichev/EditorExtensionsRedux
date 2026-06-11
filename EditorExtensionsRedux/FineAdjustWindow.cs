@@ -2,6 +2,7 @@ using KSP.Localization;
 using ClickThroughFix;
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 #if true
 namespace EditorExtensionsRedux
@@ -21,11 +22,34 @@ namespace EditorExtensionsRedux
 
         public static FineAdjustWindow Instance { get; private set; }
 
+        private GameObject _dummyCanvasObj;
+        private RectTransform _dummyRect;
+
         void Awake()
         {
             Log.Debug("FineAdjustWindow Awake()");
             this.enabled = false;
             Instance = this;
+
+            _dummyCanvasObj = new GameObject("EEX_FineAdjust_uGUI_Canvas");
+            var canvas = _dummyCanvasObj.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 3000;
+            _dummyCanvasObj.AddComponent<GraphicRaycaster>();
+
+            var panelObj = new GameObject("BlockerPanel");
+            panelObj.transform.SetParent(_dummyCanvasObj.transform, false);
+
+            var image = panelObj.AddComponent<Image>();
+            image.color = Color.clear;
+
+            _dummyRect = panelObj.GetComponent<RectTransform>();
+            _dummyRect.anchorMin = new Vector2(0, 1);
+            _dummyRect.anchorMax = new Vector2(0, 1);
+            _dummyRect.pivot = new Vector2(0, 1);
+
+            _dummyCanvasObj.SetActive(false);
+            DontDestroyOnLoad(_dummyCanvasObj);
         }
 
         void Start()
@@ -36,7 +60,7 @@ namespace EditorExtensionsRedux
         void OnEnable()
         {
             Log.Debug("FineAdjustWindow OnEnable()");
-
+            if (_dummyCanvasObj != null) _dummyCanvasObj.SetActive(true);
         }
 
         public bool isEnabled()
@@ -47,12 +71,23 @@ namespace EditorExtensionsRedux
         void CloseWindow()
         {
             this.enabled = false;
+            if (_dummyCanvasObj != null) _dummyCanvasObj.SetActive(false);
+            InputLockManager.RemoveControlLock("EEX_FA");
             Log.Info("CloseWindow enabled: " + this.enabled.ToString());
         }
 
         void OnDisable()
         {
+            if (_dummyCanvasObj != null) _dummyCanvasObj.SetActive(false);
+            InputLockManager.RemoveControlLock("EEX_FA");
+        }
 
+        void OnDestroy()
+        {
+            if (_dummyCanvasObj != null)
+            {
+                Destroy(_dummyCanvasObj);
+            }
         }
 
         void OnGUI()
@@ -77,41 +112,141 @@ namespace EditorExtensionsRedux
             translation,
             rotation,
         };
+        enum CoordinateSystem
+        {
+            absolute,
+            local,
+        };
 
-        Part activePuc;
-        Part oldActivePuc;
+        Part activePuc = null;
         bool fineAdjustActive = false;
 
+        System.Action _pendingGizmoAction = null;
 
+        CoordinateSystem coordSystem = CoordinateSystem.absolute;
         AdjustmentType adjType = AdjustmentType.translation;
         string adjTypeStr = Localizer.Format("#LOC_EEX_Translation");
         public float offset = 0.01f;
         public float rotationZZ = 1.0f;
-        public int offsetDeltaIndex = 2;
-        public int rotationdeltaIndex = 0;
 
-        float getDelta(int i)
-        {
-            switch (i)
-            {
-                case 0:
-                    return 1.0f;
-                case 1:
-                    return 0.1f;
-                case 2:
-                    return 0.01f;
-                case 3:
-                    return 0.001f;
-            }
-            return 0.1f;
-        }
+        const int buttonWidth = 40;
+        const int labelWidth = 140;
+        const int textfieldWidth = 80;
 
         //		private string[] _toolbarStrings = { "Translation", "Rotation" };
         //		int toolbarInt = 0;
 
+        void DrawAxisRow(string label, Color color, ref float value, float step, Action<float> applyDelta)
+        {
+            GUILayout.BeginHorizontal();
+
+            var colorStyle = new GUIStyle(GUI.skin.label);
+            colorStyle.normal.textColor = color;
+
+            GUILayout.Label(label, colorStyle, GUILayout.Width(labelWidth));
+
+            if (GUILayout.Button("-", GUILayout.Width(buttonWidth)))
+            {
+                value -= step;
+                applyDelta?.Invoke(-step);
+            }
+
+            bool parsed = float.TryParse(GUILayout.TextField(value.ToString("F4"), GUILayout.Width(textfieldWidth)), out float newValue);
+            if (parsed && Mathf.Abs(newValue - value) > 0.0001f)
+            {
+                float delta = newValue - value;
+                value = newValue;
+                applyDelta?.Invoke(delta);
+            }
+
+            if (GUILayout.Button("+", GUILayout.Width(buttonWidth)))
+            {
+                value += step;
+                applyDelta?.Invoke(step);
+            }
+
+            GUILayout.EndHorizontal();
+        }
+
+        void ApplyViaGizmoOffset(Vector3 axis, float delta)
+        {
+            if (GizmoEvents.gizmosOffset == null || GizmoEvents.gizmosOffset.Length == 0 || GizmoEvents.gizmosOffset[0] == null)
+                return;
+
+            if (GameSettings.VAB_USE_ANGLE_SNAP)
+                GameEvents.onEditorSnapModeChange.Fire(false);
+
+            new GIZMOS(EditorExtensions.c, false, true);
+
+            if (GizmoEvents.gizmoOffsetHandle == null)
+                return;
+
+            Refl.Invoke(GizmoEvents.gizmosOffset[0], EditorExtensions.c.GIZMOOFFSET_ONHANDLEMOVESTART, GizmoEvents.gizmoOffsetHandle, axis);
+            Refl.Invoke(GizmoEvents.gizmosOffset[0], EditorExtensions.c.GIZMOOFFSET_ONHANDLEMOVE,      GizmoEvents.gizmoOffsetHandle, axis, delta);
+            Refl.Invoke(GizmoEvents.gizmosOffset[0], EditorExtensions.c.GIZMOOFFSET_ONHANDLEMOVEEND,   GizmoEvents.gizmoOffsetHandle, axis, 0.0f);
+        }
+
+        void ApplyViaGizmoRotate(Vector3 axis, float delta)
+        {
+            if (GizmoEvents.gizmosRotate == null || GizmoEvents.gizmosRotate.Length == 0 || GizmoEvents.gizmosRotate[0] == null)
+                return;
+
+            if (GameSettings.VAB_USE_ANGLE_SNAP)
+                GameEvents.onEditorSnapModeChange.Fire(false);
+
+            new GIZMOS(EditorExtensions.c, true, false);
+
+            if (GizmoEvents.gizmoRotateHandle == null)
+                return;
+
+            Refl.Invoke(GizmoEvents.gizmosRotate[0], EditorExtensions.c.GIZMOROTATE_ONHANDLEROTATESTART, GizmoEvents.gizmoRotateHandle, axis);
+            Refl.Invoke(GizmoEvents.gizmosRotate[0], EditorExtensions.c.GIZMOROTATE_ONHANDLEROTATE,      GizmoEvents.gizmoRotateHandle, axis, delta);
+            Refl.Invoke(GizmoEvents.gizmosRotate[0], EditorExtensions.c.GIZMOROTATE_ONHANDLEROTATEEND,   GizmoEvents.gizmoRotateHandle, axis, 0.0f);
+        }
+
+        void ApplyTransformDelta(AdjustmentType type, CoordinateSystem coordSys, int axisIndex, float delta)
+        {
+            if (Mathf.Abs(delta) < 0.0001f) return;
+
+            if (!fineAdjustActive)
+            {
+                fineAdjustActive = true;
+                InputLockManager.SetControlLock(ControlTypes.CAMERACONTROLS, "EEX_FA");
+            }
+
+            Vector3[] axes = { Vector3.right, Vector3.up, Vector3.forward };
+            Vector3 axis = (coordSys == CoordinateSystem.local)
+                ? activePuc.transform.rotation * axes[axisIndex]
+                : axes[axisIndex];
+
+            if (type == AdjustmentType.translation)
+            {
+                _pendingGizmoAction = () => ApplyViaGizmoOffset(axis, delta);
+            }
+            else
+            {
+                _pendingGizmoAction = () => ApplyViaGizmoRotate(axis, delta);
+            }
+        }
 
         void WindowContent(int windowID)
         {
+            if (GizmoEvents.rotateGizmoActive)
+            {
+                adjType = AdjustmentType.rotation;
+                if (GizmoEvents.gizmosRotate != null && GizmoEvents.gizmosRotate.Length > 0 && GizmoEvents.gizmosRotate[0] != null)
+                {
+                    coordSystem = GizmoEvents.gizmosRotate[0].CoordSpace == Space.Self ? CoordinateSystem.local : CoordinateSystem.absolute;
+                }
+            }
+            else if (GizmoEvents.offsetGizmoActive)
+            {
+                adjType = AdjustmentType.translation;
+                if (GizmoEvents.gizmosOffset != null && GizmoEvents.gizmosOffset.Length > 0 && GizmoEvents.gizmosOffset[0] != null)
+                {
+                    coordSystem = GizmoEvents.gizmosOffset[0].CoordSpace == Space.Self ? CoordinateSystem.local : CoordinateSystem.absolute;
+                }
+            }
 
             //GUI.skin = HighLogic.Skin;
             var lstyle = new GUIStyle(GUI.skin.label);
@@ -121,151 +256,124 @@ namespace EditorExtensionsRedux
             {
                 lstyle.normal.textColor = Color.yellow;
             }
-            Part puc = null;
-
-            if (fineAdjustActive)
-                puc = activePuc;
-            else
-                puc = EditorLogic.SelectedPart; //Utility.GetPartUnderCursor ();
-
-            //			toolbarInt = GUILayout.Toolbar (toolbarInt, _toolbarStrings);
-            //adjTypeStr = "None";
-            if (GizmoEvents.offsetGizmoActive)
-            {
-                adjType = AdjustmentType.translation;
-                adjTypeStr = Localizer.Format("#LOC_EEX_Translation");
-            }
-            if (GizmoEvents.rotateGizmoActive)
-            {
-                adjType = AdjustmentType.rotation;
-                adjTypeStr = Localizer.Format("#LOC_EEX_Rotation");
-            }
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_EEX_AdjustmentType"), lstyle);
-            GUILayout.Label(adjTypeStr, lstyle);
+            GUILayout.Label(Localizer.Format("#LOC_EEX_CurrentPart"), lstyle, GUILayout.Width(labelWidth));
+            var titleStyle = new GUIStyle(lstyle) { wordWrap = true };
+            float titleHeight = titleStyle.lineHeight * 2 + titleStyle.padding.vertical; ;
+            GUILayout.Label(activePuc ? activePuc.partInfo.title : Localizer.Format("#LOC_EEX_None"), titleStyle, GUILayout.Height(titleHeight));
             GUILayout.EndHorizontal();
 
-
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(Localizer.Format("#LOC_EEX_AdjustmentType"), lstyle, GUILayout.Width(labelWidth));
+            string currentAdjStr = (adjType == AdjustmentType.translation) ? Localizer.Format("#LOC_EEX_Translation") : Localizer.Format("#LOC_EEX_Rotation");
+            GUILayout.Label(currentAdjStr, lstyle);
+            GUILayout.EndHorizontal();
 
             //		if (!GizmoEvents.offsetGizmoActive && !GizmoEvents.rotateGizmoActive)
             //			return;
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_EEX_CurrentPart"), lstyle);
-            GUILayout.Label(puc ? puc.name : Localizer.Format("#LOC_EEX_None"), lstyle);
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(Localizer.Format("#LOC_EEX_SymmetryMethod"), lstyle);
-            if (puc != null)
-            {
-                if (puc.symMethod == SymmetryMethod.Radial)
-                    GUILayout.Label(Localizer.Format("#LOC_EEX_SymmetryMethodRadial"));
-                else if (puc.symMethod == SymmetryMethod.Mirror)
-                    GUILayout.Label(Localizer.Format("#LOC_EEX_SymmetryMethodMirror"));
-            }
+            GUILayout.Label(Localizer.Format("#LOC_EEX_Coordinates"), lstyle, GUILayout.Width(labelWidth));
+            string currentCoordSysStr = (coordSystem == CoordinateSystem.absolute) ? Localizer.Format("#LOC_EEX_CoordinatesAbsolute") : Localizer.Format("#LOC_EEX_CoordinatesLocal");
+            GUILayout.Label(currentCoordSysStr, lstyle);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            if (adjType != AdjustmentType.translation || puc != EditorLogic.RootPart)
-            {
-                GUILayout.Label(Localizer.Format("#LOC_EEX_Delta"), lstyle, GUILayout.MinWidth(150));
-                if (GUILayout.Button("<", GUILayout.Width(20)))
-                {
-                    switch (adjType)
-                    {
-                        case AdjustmentType.rotation:
-                            rotationdeltaIndex++;
-                            if (rotationdeltaIndex > 3)
-                                rotationdeltaIndex = 3;
+            GUILayout.Label(Localizer.Format("#LOC_EEX_Delta"), lstyle, GUILayout.MinWidth(labelWidth));
 
-                            break;
-                        case AdjustmentType.translation:
-                            offsetDeltaIndex++;
-                            if (offsetDeltaIndex > 3)
-                                offsetDeltaIndex = 3;
-                            break;
-                    }
-                }
+            if (GUILayout.Button("/10", GUILayout.Width(buttonWidth)))
+            {
                 switch (adjType)
                 {
                     case AdjustmentType.rotation:
-                        GUILayout.Label(getDelta(rotationdeltaIndex).ToString(), "TextField");
+                        rotationZZ /= 10.0f;
+                        rotationZZ = Mathf.Clamp((float)Math.Round(rotationZZ, 4), 0.0001f, 1000.0f);
                         break;
                     case AdjustmentType.translation:
-                        GUILayout.Label(getDelta(offsetDeltaIndex).ToString(), "TextField");
+                        offset /= 10.0f;
+                        offset = Mathf.Clamp((float)Math.Round(offset, 4), 0.0001f, 1000.0f);
                         break;
                 }
+            }
 
-                if (GUILayout.Button(">", GUILayout.Width(20)))
+            switch (adjType)
+            {
+                case AdjustmentType.rotation:
                 {
-                    switch (adjType)
+                    if (float.TryParse(GUILayout.TextField(rotationZZ.ToString("F4"), GUILayout.Width(textfieldWidth)), out float newRotationZZ))
                     {
-                        case AdjustmentType.rotation:
-                            rotationdeltaIndex--;
-                            if (rotationdeltaIndex < 0)
-                                rotationdeltaIndex = 0;
-
-                            break;
-                        case AdjustmentType.translation:
-                            offsetDeltaIndex--;
-                            if (offsetDeltaIndex < 0)
-                                offsetDeltaIndex = 0;
-                            break;
+                        rotationZZ = newRotationZZ;
                     }
-
+                }
+                break;
+                case AdjustmentType.translation:
+                {
+                    if (float.TryParse(GUILayout.TextField(offset.ToString("F4"), GUILayout.Width(textfieldWidth)), out float newOffset))
+                    {
+                        offset = newOffset;
+                    }
+                    break;
                 }
             }
-            GUILayout.EndHorizontal();
 
-
-            GUILayout.BeginHorizontal();
-            if (adjType != AdjustmentType.translation || puc != EditorLogic.RootPart)
+            if (GUILayout.Button("x10", GUILayout.Width(buttonWidth)))
             {
-                GUILayout.Label(Localizer.Format("#LOC_EEX_Amount"), lstyle, GUILayout.MinWidth(150));
-                if (GUILayout.Button("-", GUILayout.Width(20)))
-                {
-                    switch (adjType)
-                    {
-                        case AdjustmentType.rotation:
-                            rotationZZ -= getDelta(rotationdeltaIndex);
-                            if (rotationZZ <= 0.0f)
-                                rotationZZ = getDelta(rotationdeltaIndex);
-
-                            break;
-                        case AdjustmentType.translation:
-                            offset -= getDelta(offsetDeltaIndex);
-                            if (offset <= 0.0f)
-                                offset = getDelta(offsetDeltaIndex);
-
-                            break;
-                    }
-                }
                 switch (adjType)
                 {
                     case AdjustmentType.rotation:
-                        GUILayout.Label(rotationZZ.ToString(), "TextField");
+                        rotationZZ *= 10.0f;
+                        rotationZZ = Mathf.Clamp((float)Math.Round(rotationZZ, 4), 0.0001f, 1000.0f);
                         break;
                     case AdjustmentType.translation:
-                        GUILayout.Label(offset.ToString(), "TextField");
+                        offset *= 10.0f;
+                        offset = Mathf.Clamp((float)Math.Round(offset, 4), 0.0001f, 1000.0f);
                         break;
-                }
-
-                if (GUILayout.Button("+", GUILayout.Width(20)))
-                {
-                    switch (adjType)
-                    {
-                        case AdjustmentType.rotation:
-                            rotationZZ += getDelta(rotationdeltaIndex);
-                            break;
-                        case AdjustmentType.translation:
-                            offset += getDelta(offsetDeltaIndex);
-                            break;
-                    }
-
                 }
             }
             GUILayout.EndHorizontal();
+
+            if (activePuc != null)
+            {
+                Vector3 currentVal = Vector3.zero;
+                switch (adjType)
+                {
+                    case AdjustmentType.translation:
+                    {
+                        switch (coordSystem)
+                        {
+                            case CoordinateSystem.absolute:
+                                currentVal = activePuc.transform.position;
+                                break;
+                            case CoordinateSystem.local:
+                                currentVal = Quaternion.Inverse(activePuc.transform.localRotation) * activePuc.transform.localPosition;
+                                break;
+                        }
+
+                        DrawAxisRow("X", Color.red,   ref currentVal.x, offset, delta => ApplyTransformDelta(adjType, coordSystem, 0, delta));
+                        DrawAxisRow("Y", Color.green, ref currentVal.y, offset, delta => ApplyTransformDelta(adjType, coordSystem, 1, delta));
+                        DrawAxisRow("Z", Color.blue,  ref currentVal.z, offset, delta => ApplyTransformDelta(adjType, coordSystem, 2, delta));
+                    }
+                    break;
+                    case AdjustmentType.rotation:
+                    {
+                        switch (coordSystem)
+                        {
+                            case CoordinateSystem.absolute:
+                                currentVal = activePuc.transform.eulerAngles;
+                                break;
+                            case CoordinateSystem.local:
+                                currentVal = activePuc.transform.localEulerAngles;
+                                break;
+                        }
+
+                        DrawAxisRow("X", Color.red,   ref currentVal.x, rotationZZ, delta => ApplyTransformDelta(adjType, coordSystem, 0, delta));
+                        DrawAxisRow("Y", Color.green, ref currentVal.y, rotationZZ, delta => ApplyTransformDelta(adjType, coordSystem, 1, delta));
+                        DrawAxisRow("Z", Color.blue,  ref currentVal.z, rotationZZ, delta => ApplyTransformDelta(adjType, coordSystem, 2, delta));
+                    }
+                    break;
+                }
+            }
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(Localizer.Format("#LOC_EEX_Done")))
@@ -281,62 +389,109 @@ namespace EditorExtensionsRedux
             GUI.DragWindow();
         }
 
-
         void LateUpdate()
         {
-            //Part sp = EditorLogic.SelectedPart;
-
-            /* if (sp == null) */
+            if (isEnabled() && _dummyRect != null)
             {
-                if (!fineAdjustActive)
-                {
-                    activePuc = EditorLogic.SelectedPart; //Utility.GetPartUnderCursor ();
-                    if (activePuc != oldActivePuc)
-                    {
-                        oldActivePuc = activePuc;
-                        //						if (HighLogic.FindObjectsOfType<EditorGizmos.GizmoOffset> ().Length > 0) {
-                        //						if (GizmoEvents.offsetGizmoActive) {
-                        //							toolbarInt = 0;
-                        //						}
-                        //						if (HighLogic.FindObjectsOfType<EditorGizmos.GizmoRotate> ().Length > 0) {
-                        //						if (GizmoEvents.rotateGizmoActive) {
-                        //							toolbarInt = 1;
-                        //						}
-                    }
-                }
-                #region NO_LOCALIZATION
-                if (activePuc != null)
-                {
-
-                    if (Input.GetKey(EditorExtensions.Instance.cfg.KeyMap.Down) || Input.GetKey(EditorExtensions.Instance.cfg.KeyMap.Up)
-                        || Input.GetKey(EditorExtensions.Instance.cfg.KeyMap.Left) || Input.GetKey(EditorExtensions.Instance.cfg.KeyMap.Right)
-                        || Input.GetKey(EditorExtensions.Instance.cfg.KeyMap.Forward) || Input.GetKey(EditorExtensions.Instance.cfg.KeyMap.Back))
-                    {
-
-
-                        if (!fineAdjustActive)
-                        {
-                            fineAdjustActive = true;
-                            InputLockManager.SetControlLock(ControlTypes.CAMERACONTROLS, "EEX_FA");
-                        }
-                    }
-                    if (Input.GetKey(KeyCode.Mouse1) || Input.GetKey(KeyCode.Mouse0))
-                    {
-                        fineAdjustActive = false;
-                        InputLockManager.RemoveControlLock("EEX_FA");
-                    }
-
-                }
-                else
-                {
-                    InputLockManager.RemoveControlLock("EEX_FA");
-                }
-                #endregion
+                _dummyRect.anchoredPosition = new Vector2(_windowRect.x, -_windowRect.y);
+                _dummyRect.sizeDelta = new Vector2(_windowRect.width, _windowRect.height);
             }
-        }
 
-        void OnDestroy()
-        {
+            if (_pendingGizmoAction != null)
+            {
+                var action = _pendingGizmoAction;
+                _pendingGizmoAction = null;
+                action();
+                return;
+            }
+
+            if (activePuc != EditorLogic.SelectedPart)
+            {
+                _windowRect.height = 0;
+            }
+
+            activePuc = EditorLogic.SelectedPart;
+
+            #region NO_LOCALIZATION
+            if (activePuc == null)
+            {
+                InputLockManager.RemoveControlLock("EEX_FA");
+                return;
+            }
+
+            var km = EditorExtensions.Instance.cfg.KeyMap;
+
+            bool anyKey = Input.GetKey(km.Down) || Input.GetKey(km.Up)
+                       || Input.GetKey(km.Left) || Input.GetKey(km.Right)
+                       || Input.GetKey(km.Forward) || Input.GetKey(km.Back);
+
+            bool isCompoundPart = activePuc is CompoundPart;
+
+            if (anyKey && !fineAdjustActive && !isCompoundPart)
+            {
+                fineAdjustActive = true;
+                InputLockManager.SetControlLock(ControlTypes.CAMERACONTROLS, "EEX_FA");
+            }
+
+            if (Input.GetKey(KeyCode.Mouse0) || Input.GetKey(KeyCode.Mouse1))
+            {
+                bool isPointerOverUI = UnityEngine.EventSystems.EventSystem.current != null &&
+                                       UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+
+                if (!isPointerOverUI)
+                {
+                    fineAdjustActive = false;
+                    InputLockManager.RemoveControlLock("EEX_FA");
+                    return;
+                }
+            }
+
+            if (!fineAdjustActive || isCompoundPart) return;
+
+            if (adjType == AdjustmentType.translation)
+            {
+                if (!GizmoEvents.offsetGizmoActive || GizmoEvents.gizmosOffset == null || GizmoEvents.gizmosOffset.Length == 0)
+                    return;
+
+                if (GameSettings.VAB_USE_ANGLE_SNAP)
+                    GameEvents.onEditorSnapModeChange.Fire(false);
+
+                new GIZMOS(EditorExtensions.c, false, true);
+
+                if (Input.GetKeyDown(km.Down))
+                    ApplyViaGizmoOffset(Vector3.down, offset);
+                else if (Input.GetKeyDown(km.Up))
+                    ApplyViaGizmoOffset(Vector3.up, offset);
+                else if (Input.GetKeyDown(km.Left))
+                    ApplyViaGizmoOffset(EditorDriver.editorFacility == EditorFacility.VAB ? Vector3.forward : Vector3.right, offset);
+                else if (Input.GetKeyDown(km.Right))
+                    ApplyViaGizmoOffset(EditorDriver.editorFacility == EditorFacility.VAB ? Vector3.back : Vector3.left, offset);
+                else if (Input.GetKeyDown(km.Forward))
+                    ApplyViaGizmoOffset(EditorDriver.editorFacility == EditorFacility.VAB ? Vector3.right : Vector3.back, offset);
+                else if (Input.GetKeyDown(km.Back))
+                    ApplyViaGizmoOffset(EditorDriver.editorFacility == EditorFacility.VAB ? Vector3.left : Vector3.forward, offset);
+            }
+            else
+            {
+                if (!GizmoEvents.rotateGizmoActive || GizmoEvents.gizmosRotate == null || GizmoEvents.gizmosRotate.Length == 0)
+                    return;
+
+                new GIZMOS(EditorExtensions.c, true, false);
+
+                if (Input.GetKeyDown(km.Down))
+                    ApplyViaGizmoRotate(EditorDriver.editorFacility == EditorFacility.VAB ? Vector3.forward : Vector3.left, rotationZZ);
+                else if (Input.GetKeyDown(km.Up))
+                    ApplyViaGizmoRotate(EditorDriver.editorFacility == EditorFacility.VAB ? Vector3.back : Vector3.right, rotationZZ);
+                else if (Input.GetKeyDown(km.Left))
+                    ApplyViaGizmoRotate(EditorDriver.editorFacility == EditorFacility.VAB ? Vector3.right : Vector3.forward, rotationZZ);
+                else if (Input.GetKeyDown(km.Right))
+                    ApplyViaGizmoRotate(EditorDriver.editorFacility == EditorFacility.VAB ? Vector3.left : Vector3.back, rotationZZ);
+                else if (Input.GetKeyDown(km.Forward))
+                    ApplyViaGizmoRotate(Vector3.up, rotationZZ);
+                else if (Input.GetKeyDown(km.Back))
+                    ApplyViaGizmoRotate(Vector3.down, rotationZZ);
+            }
+            #endregion
         }
 
         /// <summary>
